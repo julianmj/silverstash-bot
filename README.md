@@ -1,0 +1,1 @@
+# silverstash-bot
