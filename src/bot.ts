@@ -1,4 +1,5 @@
-import { Bot } from "grammy";
+import { Bot, webhookCallback } from "grammy";
+import express from 'express';
 
 require('dotenv').config()
 
@@ -9,7 +10,7 @@ const bot = new Bot(process.env.BOT_TOKEN); // <-- put your authentication token
 // grammY will call the listeners when users send messages to your bot.
 
 // Handle the /start command.
-bot.command("start", (ctx) => ctx.reply("Welcome! Up and running."));
+bot.command("start", (ctx) => ctx.reply(`Welcome ${ctx.from.first_name}! Up and running!!!!.`));
 // Handle other messages.
 bot.on("message", (ctx) => ctx.reply("Got another message!"));
 
@@ -17,4 +18,17 @@ bot.on("message", (ctx) => ctx.reply("Got another message!"));
 // This will connect to the Telegram servers and wait for messages.
 
 // Start the bot.
-bot.start();
+if (process.env.NODE_ENV === "production") {
+    // Use Webhooks for the production server
+    const app = express();
+    app.use(express.json());
+    app.use(webhookCallback(bot, "express"));
+  
+    const PORT = process.env.PORT || 3000;
+    app.listen(PORT, () => {
+      console.log(`Bot listening on port ${PORT}`);
+    });
+  } else {
+    // Use Long Polling for development
+    bot.start();
+  }
